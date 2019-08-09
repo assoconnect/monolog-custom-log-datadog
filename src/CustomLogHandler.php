@@ -73,6 +73,6 @@ class CustomLogHandler extends AbstractProcessingHandler
         $path = '/v1/input/' . $this->apiKey;
         $method = 'POST';
 
-        $res = $this->query($path, $method, $record);
+        $this->query($path, $method, $record);
     }
 }
