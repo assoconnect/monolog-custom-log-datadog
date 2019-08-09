@@ -14,8 +14,10 @@ cache:
 before_script:
   - composer self-update
   - composer install --no-interaction
+  - composer require php-coveralls/php-coveralls
   - wget https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar
   
 script:
-  - php phpcs.phar --standard=PSR12 ./src
+  - vendor/bin/phpunit --coverage-clover ./tests/logs/clover.xml --log-junit ./tests/logs/phpunit.report.xml
+  - php phpcs.phar --standard=PSR12 ./src ./tests
   - 'if [ ! -z "$SONAR_TOKEN" ]; then sonar-scanner; fi'
