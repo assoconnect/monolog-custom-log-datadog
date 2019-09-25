@@ -6,7 +6,6 @@ use AssoConnect\MonologDatadog\CustomLogHandler;
 use GuzzleHttp\ClientInterface;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 
 final class CustomLogHandlerTest extends TestCase
 {
@@ -36,7 +35,7 @@ final class CustomLogHandlerTest extends TestCase
                     && $options['headers']['Accept'] == '*/*'
                 ;
             })
-        )->willReturn($this->getMockBuilder(ResponseInterface::class)->getMock());
+        );
 
         $logger = new Logger('phpunit');
         $logger->pushHandler($this->customLogHandler);
