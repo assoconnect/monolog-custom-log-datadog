@@ -3,43 +3,107 @@
 namespace AssoConnect\Tests;
 
 use AssoConnect\MonologDatadog\CustomLogHandler;
+use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
+use Koriym\HttpConstants\Method;
+use Koriym\HttpConstants\RequestHeader;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 
 final class CustomLogHandlerTest extends TestCase
 {
-    private const ENDPOINT = 'foo';
+    private const ENDPOINT = 'http://foo.com';
     private const API_KEY = 'bar';
 
-    private $clientMock;
-
+    /** @var CustomLogHandler */
     private $customLogHandler;
+
+    /** @var Client */
+    protected $guzzle;
+
+    /** @var MockHandler */
+    protected $guzzleMockHandler;
+
+    /** @var array */
+    protected $guzzleHistory = [];
+
+    /** @var Logger */
+    protected $logger;
 
     protected function setUp()
     {
-        $this->clientMock = $this->getMockBuilder(ClientInterface::class)->getMock();
-        $this->customLogHandler = new CustomLogHandler(self::ENDPOINT, self::API_KEY, $this->clientMock);
+        $this->guzzleHistory = [];
+        $history = Middleware::history($this->guzzleHistory);
+
+        $this->guzzleMockHandler = new MockHandler();
+
+        $handler = HandlerStack::create($this->guzzleMockHandler);
+
+        // Add the history middleware to the handler stack.
+        $handler->push($history);
+
+        $this->guzzle = new Client(['handler' => $handler]);
+
+        $this->customLogHandler = new CustomLogHandler(self::ENDPOINT, self::API_KEY, $this->guzzle);
+
+        $this->logger = new Logger('phpunit');
+        $this->logger->pushHandler($this->customLogHandler);
     }
 
-    public function testItCallTheEndpointWithExpectedMessageAndHeaders()
+    public function testItCallsTheEndpointWithExpectedMessageAndHeaders()
     {
-        $this->clientMock->expects($this->once())->method('request')->with(
-            'POST',
-            self::ENDPOINT . '/v1/input/' . self::API_KEY,
-            $this->callback(function ($options) {
-                $body = json_decode($options['body'], true);
+        $this->guzzleMockHandler->append(new Response(200));
 
-                return $body['message'] === 'test'
-                    && $options['headers']['Content-Type'] == 'application/json'
-                    && $options['headers']['Accept'] == '*/*'
-                ;
-            })
-        );
+        $this->logger->info($message = 'test');
 
-        $logger = new Logger('phpunit');
-        $logger->pushHandler($this->customLogHandler);
+        $this->assertCount(1, $this->guzzleHistory);
+        /** @var Request $request */
+        $request = $this->guzzleHistory[0]['request'];
+        $this->assertSame(self::ENDPOINT . '/v1/input/' . self::API_KEY, $request->getUri()->__toString());
+        $this->assertSame(Method::POST, $request->getMethod());
+        $this->assertSame('application/json', $request->getHeaderLine(RequestHeader::CONTENT_TYPE));
+        $this->assertSame('*/*', $request->getHeaderLine(RequestHeader::ACCEPT));
 
-        $logger->info('test');
+        $body = json_decode($request->getBody(), true);
+        $this->assertSame($message, $body['message']);
+    }
+
+    public function testWithTagsAsString()
+    {
+        $tags = 'foo:bar,hello:world';
+        $this->logger->pushProcessor(function (array $record) use ($tags): array {
+            $record['ddtags'] = $tags;
+            return $record;
+        });
+
+        $this->guzzleMockHandler->append(new Response(200));
+
+        $this->logger->info('test');
+
+        $body = json_decode($this->guzzleHistory[0]['request']->getBody(), true);
+        $this->assertSame($tags, $body['ddtags']);
+    }
+
+    public function testWithTagsAsArray()
+    {
+        $this->logger->pushProcessor(function (array $record): array {
+            $record['ddtags'] = [
+                'foo' => 'bar',
+                'hello' => 'world',
+            ];
+            return $record;
+        });
+
+        $this->guzzleMockHandler->append(new Response(200));
+
+        $this->logger->info('test');
+
+        $body = json_decode($this->guzzleHistory[0]['request']->getBody(), true);
+        $this->assertSame('foo:bar,hello:world', $body['ddtags']);
     }
 }
