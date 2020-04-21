@@ -1,6 +1,6 @@
 {
     "name": "assoconnect/monolog-custom-log-datadog",
-    "description": "Monolog custom logs for Datadog",
+    "description": "Monolog handler for Datadog",
     "license": "MIT",
     "autoload": {
         "psr-4": {

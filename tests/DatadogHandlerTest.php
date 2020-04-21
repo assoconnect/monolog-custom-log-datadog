@@ -2,9 +2,8 @@
 
 namespace AssoConnect\Tests;
 
-use AssoConnect\MonologDatadog\CustomLogHandler;
+use AssoConnect\MonologDatadog\DatadogHandler;
 use GuzzleHttp\Client;
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
@@ -15,13 +14,13 @@ use Koriym\HttpConstants\RequestHeader;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 
-final class CustomLogHandlerTest extends TestCase
+final class DatadogHandlerTest extends TestCase
 {
     private const ENDPOINT = 'http://foo.com';
     private const API_KEY = 'bar';
 
-    /** @var CustomLogHandler */
-    private $customLogHandler;
+    /** @var DatadogHandler */
+    private $datadogHandler;
 
     /** @var Client */
     protected $guzzle;
@@ -49,10 +48,10 @@ final class CustomLogHandlerTest extends TestCase
 
         $this->guzzle = new Client(['handler' => $handler]);
 
-        $this->customLogHandler = new CustomLogHandler(self::ENDPOINT, self::API_KEY, $this->guzzle);
+        $this->datadogHandler = new DatadogHandler(self::ENDPOINT, self::API_KEY, $this->guzzle);
 
         $this->logger = new Logger('phpunit');
-        $this->logger->pushHandler($this->customLogHandler);
+        $this->logger->pushHandler($this->datadogHandler);
     }
 
     public function testItCallsTheEndpointWithExpectedMessageAndHeaders()
