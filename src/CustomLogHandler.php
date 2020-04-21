@@ -73,6 +73,14 @@ class CustomLogHandler extends AbstractProcessingHandler
             $record['ddtags'] = implode(',', $tags);
         }
 
+        if (isset($record['context']['service']) && !isset($record['service'])) {
+            $record['service'] = $record['context']['service'];
+        }
+
+        if (isset($record['context']['hostname']) && !isset($record['hostname'])) {
+            $record['hostname'] = $record['context']['hostname'];
+        }
+
         return $record;
     }
 }
