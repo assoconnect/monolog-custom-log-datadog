@@ -6,6 +6,8 @@ namespace AssoConnect\MonologDatadog;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
+use Koriym\HttpConstants\Method;
+use Koriym\HttpConstants\RequestHeader;
 use Monolog\Handler\AbstractProcessingHandler;
 
 class CustomLogHandler extends AbstractProcessingHandler
@@ -45,18 +47,32 @@ class CustomLogHandler extends AbstractProcessingHandler
      */
     protected function write(array $record): void
     {
+        $record = $this->formatRecord($record);
+
         $data = [
-            'body' => json_encode($record),
+            'json' => $record,
             'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => '*/*',
+                RequestHeader::ACCEPT => '*/*',
             ],
         ];
 
         $this->client->request(
-            'POST',
+            Method::POST,
             $this->endpoint . '/v1/input/' . $this->apiKey,
             $data
         );
+    }
+
+    protected function formatRecord(array $record): array
+    {
+        if (isset($record['ddtags']) && !is_string($record['ddtags'])) {
+            $tags = [];
+            foreach ($record['ddtags'] as $key => $value) {
+                $tags[] = $key . ':' . $value;
+            }
+            $record['ddtags'] = implode(',', $tags);
+        }
+
+        return $record;
     }
 }
