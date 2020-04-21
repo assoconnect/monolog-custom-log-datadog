@@ -10,7 +10,7 @@ use Koriym\HttpConstants\Method;
 use Koriym\HttpConstants\RequestHeader;
 use Monolog\Handler\AbstractProcessingHandler;
 
-class CustomLogHandler extends AbstractProcessingHandler
+class MonologHandler extends AbstractProcessingHandler
 {
     /**
      * Guzzle Client
