@@ -9,6 +9,7 @@ use GuzzleHttp\Exception\GuzzleException;
 use Koriym\HttpConstants\Method;
 use Koriym\HttpConstants\RequestHeader;
 use Monolog\Handler\AbstractProcessingHandler;
+use Monolog\Logger;
 
 class DatadogHandler extends AbstractProcessingHandler
 {
@@ -33,11 +34,18 @@ class DatadogHandler extends AbstractProcessingHandler
      */
     protected $apiKey;
 
-    public function __construct(string $endpoint, string $apiKey, ClientInterface $client)
-    {
+    public function __construct(
+        string $endpoint,
+        string $apiKey,
+        ClientInterface $client,
+        $level = Logger::DEBUG,
+        $bubble = true
+    ) {
         $this->endpoint = $endpoint;
         $this->apiKey = $apiKey;
         $this->client = $client;
+
+        parent::__construct($level, $bubble);
     }
 
     /**
