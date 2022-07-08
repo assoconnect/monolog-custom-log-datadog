@@ -11,28 +11,25 @@ use Koriym\HttpConstants\RequestHeader;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\Logger;
 
+/**
+ * @phpstan-import-type Record from \Monolog\Logger
+ */
 class DatadogHandler extends AbstractProcessingHandler
 {
     /**
      * Guzzle Client
-     *
-     * @var ClientInterface
      */
-    protected $client;
+    protected ClientInterface $client;
 
     /**
      * Datadog endpoint
-     *
-     * @var string
      */
-    protected $endpoint;
+    protected string $endpoint;
 
     /**
      * Datadog API KEY
-     *
-     * @var string
      */
-    protected $apiKey;
+    protected string $apiKey;
 
     public function __construct(
         string $endpoint,
@@ -49,16 +46,49 @@ class DatadogHandler extends AbstractProcessingHandler
     }
 
     /**
-     * @param array $record
+     * @param Record $record
      *
      * @throws GuzzleException
      */
     protected function write(array $record): void
     {
-        $record = $this->formatRecord($record);
+        $this->doWrite([$record]);
+    }
+
+    /**
+     * @param Record[] $records
+     */
+    public function handleBatch(array $records): void
+    {
+        $records = array_filter($records, [$this, 'isHandling']);
+
+        if ([] !== $this->processors) {
+            $records = array_map([$this, 'processRecord'], $records);
+        }
+
+        array_walk($records, function (array $record): array {
+            /** @var Record $record */
+            $record['formatted'] = $this->getFormatter()->format($record);
+            return $record;
+        });
+
+        /** @var Record[] $records */
+        $this->doWrite($records);
+    }
+
+    /**
+     * @param Record[] $records
+     */
+    private function doWrite(array $records): void
+    {
+        if ([] === $records) {
+            return;
+        }
+
+        $records = array_map([$this, 'formatRecord'], $records);
 
         $data = [
-            'json' => $record,
+            'json' => $records,
             'headers' => [
                 RequestHeader::ACCEPT => '*/*',
             ],
@@ -71,7 +101,11 @@ class DatadogHandler extends AbstractProcessingHandler
         );
     }
 
-    protected function formatRecord(array $record): array
+    /**
+     * @param Record $record
+     * @return Record
+     */
+    private function formatRecord(array $record): array
     {
         if (isset($record['ddtags']) && !is_string($record['ddtags'])) {
             $tags = [];

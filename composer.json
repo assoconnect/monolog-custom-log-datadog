@@ -8,14 +8,19 @@
         }
     },
     "require": {
-        "php": "^7.1.3|^8.0",
+        "php": "^7.4|^8.0",
         "guzzlehttp/guzzle": "^6.3",
         "guzzlehttp/psr7": "^1.6",
         "monolog/monolog": "^1.24|^2.0",
         "koriym/http-constants": "^1.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^7.5",
+        "phpunit/phpunit": "^9.2",
+        "squizlabs/php_codesniffer": "^3",
+        "phpstan/phpstan": "^1.2",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "phpstan/phpstan-strict-rules": "^1.1",
+        "roave/no-floaters": "^1.5",
         "ext-json": "*"
     }
 }

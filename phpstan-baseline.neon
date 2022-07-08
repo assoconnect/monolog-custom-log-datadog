@@ -1,0 +1,21 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Offset 'ddtags' on array\\{message\\: string, context\\: array, level\\: 100\\|200\\|250\\|300\\|400\\|500\\|550\\|600, level_name\\: 'ALERT'\\|'CRITICAL'\\|'DEBUG'\\|'EMERGENCY'\\|'ERROR'\\|'INFO'\\|'NOTICE'\\|'WARNING', channel\\: string, datetime\\: DateTimeImmutable, extra\\: array\\} in isset\\(\\) does not exist\\.$#"
+			count: 1
+			path: src/DatadogHandler.php
+
+		-
+			message: "#^Offset 'hostname' on array\\{message\\: string, context\\: array, level\\: 100\\|200\\|250\\|300\\|400\\|500\\|550\\|600, level_name\\: 'ALERT'\\|'CRITICAL'\\|'DEBUG'\\|'EMERGENCY'\\|'ERROR'\\|'INFO'\\|'NOTICE'\\|'WARNING', channel\\: string, datetime\\: DateTimeImmutable, extra\\: array, service\\?\\: mixed\\} in isset\\(\\) does not exist\\.$#"
+			count: 1
+			path: src/DatadogHandler.php
+
+		-
+			message: "#^Offset 'service' on array\\{message\\: string, context\\: array, level\\: 100\\|200\\|250\\|300\\|400\\|500\\|550\\|600, level_name\\: 'ALERT'\\|'CRITICAL'\\|'DEBUG'\\|'EMERGENCY'\\|'ERROR'\\|'INFO'\\|'NOTICE'\\|'WARNING', channel\\: string, datetime\\: DateTimeImmutable, extra\\: array\\} in isset\\(\\) does not exist\\.$#"
+			count: 1
+			path: src/DatadogHandler.php
+
+		-
+			message: "#^Result of && is always false\\.$#"
+			count: 1
+			path: src/DatadogHandler.php
