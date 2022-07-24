@@ -1,14 +1,9 @@
 parameters:
-    level: 8
     paths:
         - src/
         - tests/
-    # Enforce typed properties being assigned in the constructor
-    checkUninitializedProperties: true
 
 includes:
-    - vendor/phpstan/phpstan-phpunit/extension.neon
-    - vendor/phpstan/phpstan-phpunit/rules.neon
-    - vendor/phpstan/phpstan-strict-rules/rules.neon
-    - vendor/roave/no-floaters/rules.neon
+    - vendor/assoconnect/phpstan-rules/extension.neon
+    - vendor/assoconnect/phpstan-rules/rules.neon
     - phpstan-baseline.neon
