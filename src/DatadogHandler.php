@@ -94,6 +94,15 @@ class DatadogHandler extends AbstractProcessingHandler
             ],
         ];
 
+        // used to debug Sentry 3416340756
+        if (false === json_encode($data)) {
+            $serialized = urlencode(serialize($data));
+            $utf8Serialized = urlencode(utf8_encode(serialize($data)));
+            throw new \ErrorException(
+                sprintf('Debug json_encode error : %s - utf8 %s', $serialized, $utf8Serialized)
+            );
+        }
+
         $this->client->request(
             Method::POST,
             $this->endpoint . '/v1/input/' . $this->apiKey,
